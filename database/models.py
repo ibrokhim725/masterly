@@ -21,6 +21,7 @@ from sqlalchemy import (
     false,
     func,
     text,
+    true,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -144,9 +145,11 @@ class Service(TimestampMixin, Base):
         Numeric(14, 2), nullable=False, default=Decimal("0.00"), server_default=text("0")
     )
     price_type: Mapped[str] = mapped_column(
-        enum_column(PriceType, 16), nullable=False, default=PriceType.FROM.value
+        SAEnum(PriceType, native_enum=False, validate_strings=True),
+        nullable=False,
+        default=PriceType.FROM,
     )
-    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default=text("1"))
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default=true())
     sort_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default=text("0"))
 
     master_services: Mapped[list[MasterService]] = relationship(
@@ -176,7 +179,7 @@ class Master(TimestampMixin, Base):
     status: Mapped[str] = mapped_column(
         enum_column(MasterStatus, 16), nullable=False, default=MasterStatus.PENDING.value, index=True
     )
-    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default=text("1"))
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default=true())
     rating: Mapped[Decimal] = mapped_column(
         Numeric(3, 2), nullable=False, default=Decimal("0.00"), server_default=text("0")
     )
@@ -224,7 +227,7 @@ class MasterService(Base):
         ForeignKey("services.id", ondelete="CASCADE"), nullable=False
     )
     price: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False, default=Decimal("0.00"))
-    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default=text("1"))
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default=true())
 
     master: Mapped[Master] = relationship(back_populates="services")
     service: Mapped[Service] = relationship(back_populates="master_services", lazy="selectin")
@@ -243,7 +246,7 @@ class MasterCard(TimestampMixin, Base):
     card_holder: Mapped[str] = mapped_column(String(120), nullable=False)
     bank_name: Mapped[str | None] = mapped_column(String(120))
     is_default: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default=false())
-    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default=text("1"))
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default=true())
 
     master: Mapped[Master] = relationship(back_populates="cards")
 
